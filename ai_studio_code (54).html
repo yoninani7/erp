@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EXCEED ERP System | Dashboard</title>
+    <!-- Font Awesome for sharp, identical icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #3c8dbc;
+            --logo-dark-blue: #367fa9;
+            --notif-maroon: #9e1c3a;
+            --sidebar-bg: #f9fafc;
+            --sidebar-border: #d2d6de;
+            --text-dark: #333;
+            --dotted-line: #3c8dbc;
+            --active-blue: #3c8dbc;
+            --app-desc-blue: #3c8dbc;
+            --orange-gear: #f39c12;
+            --sidebar-width: 230px;
+            --sidebar-collapsed-width: 50px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+        body { background-color: #ecf0f5; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+
+        /* --- THE HEADER --- */
+        header {
+            height: 50px;
+            display: flex;
+            color: white;
+            z-index: 1000;
+            flex-shrink: 0;
+        }
+
+        .header-logo {
+            width: var(--sidebar-width); 
+            background-color: var(--logo-dark-blue);
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            font-size: 20px;
+            font-weight: 400;
+            gap: 10px;
+            cursor: pointer;
+            transition: width 0.3s ease;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .header-main-nav {
+            flex-grow: 1;
+            background-color: var(--primary-blue);
+            display: flex;
+            justify-content: space-between;
+            height: 50px;
+        }
+
+        .nav-toggle-btn {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background 0.2s;
+        }
+        .nav-toggle-btn:hover { background: rgba(0,0,0,0.1); }
+
+        .nav-right-items { display: flex; }
+
+        .notif-block {
+            background-color: var(--notif-maroon);
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .notif-badge {
+            background: white;
+            color: var(--notif-maroon);
+            font-size: 10px;
+            padding: 2px 5px;
+            border-radius: 10px;
+            position: absolute;
+            top: 10px;
+            right: 5px;
+            font-weight: bold;
+        }
+
+        .nav-info-item {
+            padding: 0 15px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+            border-left: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+        }
+
+        /* --- WRAPPER --- */
+        .wrapper { display: flex; flex: 1; overflow: hidden; }
+
+        /* --- SIDEBAR --- */
+        aside {
+            width: var(--sidebar-width);
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--sidebar-border);
+            overflow-y: auto;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            transition: width 0.3s ease;
+        }
+
+        .menu-list { list-style: none; padding-top: 5px; }
+        .menu-item { border-bottom: 1px solid #f4f4f4; position: relative; }
+        
+        .menu-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            text-decoration: none;
+            color: #444;
+            font-size: 14px;
+            cursor: pointer;
+            position: relative; /* Base for absolute chevron positioning */
+        }
+        .menu-link i:first-child { width: 30px; font-size: 18px; color: #333; flex-shrink: 0; }
+        .menu-link span { flex: 1; white-space: nowrap; overflow: hidden; padding-right: 25px; }
+        
+        /* ALIGNMENT FIX: Absolute positioning relative to the right edge of the link */
+        .chevron { 
+            position: absolute;
+            right: 15px; 
+            font-size: 11px; 
+            color: #999; 
+            transition: transform 0.3s; 
+        }
+
+        /* NESTING LOGIC */
+        .submenu {
+            list-style: none;
+            display: none; 
+            margin-left: 20px; /* Visual indent for the dotted line */
+            border-left: 1px dotted var(--dotted-line);
+            position: relative;
+        }
+        
+        /* STRETCH NESTED LINKS: Forces the link to expand back to the sidebar edge */
+        .submenu .menu-link {
+            margin-right: -20px; 
+            padding-left: 25px;
+        }
+        
+        /* DEEP NESTING STRETCH: HRM > Company > Business Unit */
+        .submenu .submenu .menu-link {
+            margin-right: -35px; /* Cumulative indent (20 + 15) */
+        }
+
+        .menu-item.open > .submenu { display: block; padding-bottom: 5px; }
+        .menu-item.open > .menu-link > .chevron { transform: rotate(-180deg); }
+
+        .submenu li { position: relative; }
+        .submenu li::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 18px;
+            width: 15px;
+            border-top: 1px dotted var(--dotted-line);
+        }
+
+        .submenu li a {
+            padding: 8px 10px 8px 25px;
+            font-size: 13px;
+            color: #555;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+        .submenu li a i { width: 20px; font-size: 14px; margin-right: 8px; color: #777; }
+        .submenu li a:hover, .submenu .menu-link:hover { color: var(--active-blue); }
+
+        /* Support for inner-inner spacing */
+        .submenu .submenu { margin-left: 15px; }
+
+        /* COLLAPSED STATE */
+        body.collapsed .header-logo { width: var(--sidebar-collapsed-width); }
+        body.collapsed .header-logo span { display: none; }
+        body.collapsed aside { width: var(--sidebar-collapsed-width); }
+        body.collapsed aside span, 
+        body.collapsed aside .chevron, 
+        body.collapsed aside .submenu { display: none !important; }
+
+        /* --- MAIN AREA --- */
+        main { flex: 1; padding: 25px; overflow-y: auto; background-color: #fff; }
+        .page-title { font-size: 28px; font-weight: 300; margin-bottom: 25px; color: #333; }
+
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .app-card {
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .app-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.15); border-color: var(--active-blue); }
+
+        .app-icon { width: 55px; height: 55px; flex-shrink: 0; }
+        .app-info h3 { font-size: 16px; margin-bottom: 6px; color: #333; font-weight: 600; }
+        .app-info p { font-size: 13px; color: var(--app-desc-blue); line-height: 1.4; }
+
+        .settings-gear {
+            position: fixed;
+            right: 0;
+            top: 75px;
+            background-color: var(--orange-gear);
+            color: white;
+            padding: 10px;
+            border-radius: 5px 0 0 5px;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        .sidebar-footer { padding: 15px; border-top: 1px solid #eee; text-align: center; margin-top: auto; }
+        .collapse-btn { width: 25px; height: 25px; border: 1px solid #ddd; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #999; cursor: pointer; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-logo" onclick="location.reload()">
+            <i class="fa-solid fa-earth-africa"></i>
+            <span>EXCEED ERP </span>
+        </div>
+        
+        <div class="header-main-nav">
+            <div class="nav-toggle-btn" onclick="toggleSidebar()">
+                <i class="fa-solid fa-bars"></i>
+            </div>
+            <div class="nav-right-items">
+                <div class="notif-block">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notif-badge">5</span>
+                </div>
+                <div class="nav-info-item">Hello የጥበብ ህይወት ሃይለሚካኤል !</div>
+                <div class="nav-info-item">Branch: Head Office</div>
+                <div class="nav-info-item">Business Unit: Head Office</div>
+                <div class="nav-info-item"><i class="fa-solid fa-power-off"></i>&nbsp; Log off</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="wrapper">
+        <aside id="sidebar">
+            <ul class="menu-list">
+                <li class="menu-item"><a href="#" class="menu-link"><i class="fa-solid fa-gauge-high"></i> <span>Dashboard</span></a></li>
+                 
+                <!-- HRM -->
+                <li class="menu-item">
+                    <a class="menu-link">
+                        <i class="fa-solid fa-user"></i> <span>HRM</span> <i class="fa-solid fa-chevron-down chevron"></i>
+                    </a>
+                    <ul class="submenu">
+                        <li class="menu-item">
+                            <a class="menu-link"><i class="fa-solid fa-building"></i> <span>Company</span> <i class="fa-solid fa-chevron-down chevron"></i></a>
+                            <ul class="submenu">
+                                <li><a href="#"><i class="fa-solid fa-sitemap"></i> Business Units</a></li>
+                                <li><a href="#"><i class="fa-solid fa-code-branch"></i> Branches</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="#"><i class="fa-solid fa-user-tie"></i> Employee</a></li>
+                        <li><a href="#"><i class="fa-solid fa-user-plus"></i> Recruitment</a></li>
+                        <li><a href="#"><i class="fa-solid fa-street-view"></i> Placement</a></li>
+                        <li><a href="#"><i class="fa-solid fa-clipboard-user"></i> Attendance</a></li>
+                        <li><a href="#"><i class="fa-solid fa-calendar-minus"></i> Leave</a></li>
+                        <li><a href="#"><i class="fa-solid fa-gift"></i> Benefit</a></li>
+                    </ul>
+                </li>
+
+                <!-- Payroll -->
+                <li class="menu-item">
+                    <a class="menu-link">
+                        <i class="fa-solid fa-money-check-dollar"></i> <span>Payroll</span> <i class="fa-solid fa-chevron-down chevron"></i>
+                    </a>
+                    <ul class="submenu">
+                        <li><a href="#"><i class="fa-solid fa-gears"></i> Payroll Setup</a></li>
+                        <li><a href="#"><i class="fa-solid fa-calculator"></i> Calculation</a></li>
+                        <li><a href="#"><i class="fa-solid fa-file-invoice-dollar"></i> Pay Slip</a></li>
+                    </ul>
+                </li>
+
+                <!-- Finance -->
+                <li class="menu-item">
+                    <a class="menu-link">
+                        <i class="fa-solid fa-file-invoice-dollar"></i> <span>Finance</span> <i class="fa-solid fa-chevron-down chevron"></i>
+                    </a>
+                    <ul class="submenu">
+                        <li><a href="#"><i class="fa-solid fa-book"></i> General Ledger</a></li>
+                        <li><a href="#"><i class="fa-solid fa-receipt"></i> Accounts Payable</a></li>
+                        <li><a href="#"><i class="fa-solid fa-chart-pie"></i> Financial Reports</a></li>
+                    </ul>
+                </li>
+                
+                <!-- Procurement -->
+                <li class="menu-item">
+                    <a class="menu-link">
+                        <i class="fa-solid fa-cart-shopping"></i> <span>Procurement</span> <i class="fa-solid fa-chevron-down chevron"></i>
+                    </a>
+                    <ul class="submenu">
+                        <li class="menu-item">
+                            <a class="menu-link"><i class="fa-solid fa-file-signature"></i> <span>Requisition</span> <i class="fa-solid fa-chevron-down chevron"></i></a>
+                            <ul class="submenu">
+                                <li><a href="#"><i class="fa-solid fa-file-circle-check"></i> Approved</a></li>
+                                <li><a href="#"><i class="fa-solid fa-file-circle-exclamation"></i> Pending</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="#"><i class="fa-solid fa-truck-ramp-box"></i> Purchase Order</a></li>
+                        <li><a href="#"><i class="fa-solid fa-tags"></i> Quotations</a></li>
+                    </ul>
+                </li>
+
+                <!-- Property -->
+                <li class="menu-item">
+                    <a class="menu-link">
+                        <i class="fa-solid fa-building"></i> <span>Property</span> <i class="fa-solid fa-chevron-down chevron"></i>
+                    </a>
+                    <ul class="submenu">
+                        <li><a href="#"><i class="fa-solid fa-boxes-stacked"></i> Inventory Items</a></li>
+                        <li><a href="#"><i class="fa-solid fa-warehouse"></i> Store Management</a></li>
+                    </ul>
+                </li>
+
+                <!-- Fixed Asset -->
+                <li class="menu-item">
+                    <a class="menu-link">
+                        <i class="fa-solid fa-box-archive"></i> <span>Fixed Asset (PPE)</span> <i class="fa-solid fa-chevron-down chevron"></i>
+                    </a>
+                    <ul class="submenu">
+                        <li><a href="#"><i class="fa-solid fa-barcode"></i> Asset Registry</a></li>
+                        <li><a href="#"><i class="fa-solid fa-arrow-trend-down"></i> Depreciation</a></li>
+                    </ul>
+                </li>
+
+                 <li class="menu-item">
+                    <a class="menu-link">
+                        <i class="fa-solid fa-user-shield"></i> <span>Self care</span> <i class="fa-solid fa-chevron-down chevron"></i>
+                    </a>
+                    <ul class="submenu">
+                        <li><a href="#"><i class="fa-solid fa-user-circle"></i> My Profile</a></li>
+                        <li><a href="#"><i class="fa-solid fa-file-lines"></i> My Requests</a></li>
+                    </ul>
+                </li>
+
+                <li class="menu-item">
+                    <a class="menu-link">
+                        <i class="fa-solid fa-gear"></i> <span>Settings</span> <i class="fa-solid fa-chevron-down chevron"></i>
+                    </a>
+                    <ul class="submenu">
+                        <li><a href="#"><i class="fa-solid fa-users-gear"></i> User Admin</a></li>
+                        <li><a href="#"><i class="fa-solid fa-key"></i> Roles</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="collapse-btn" onclick="toggleSidebar()"><i class="fa-solid fa-chevron-left" style="font-size: 10px;"></i></div>
+            </div>
+        </aside>
+
+        <main>
+            <h1 class="page-title">Apps</h1>
+            <div class="apps-grid">
+                <div class="app-card">
+                    <img src="https://cdn-icons-png.flaticon.com/512/912/912318.png" class="app-icon">
+                    <div class="app-info"><h3>HRM</h3><p>From recruitment to termination and all process in between</p></div>
+                </div>
+                <div class="app-card">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2897/2897785.png" class="app-icon">
+                    <div class="app-info"><h3>Inventory</h3><p>Warehouse management, inventory items movement ,physical count</p></div>
+                </div>
+                <div class="app-card">
+                    <img src="https://cdn-icons-png.flaticon.com/512/609/609803.png" class="app-icon">
+                    <div class="app-info"><h3>PPE (Fixed Asset)</h3><p>Fixed asset registration and tracking , annual depreciation and asset movement</p></div>
+                </div>
+                <div class="app-card">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2454/2454282.png" class="app-icon">
+                    <div class="app-info"><h3>Finance</h3><p>Accounting and financial management, transactions and reporting</p></div>
+                </div>
+                <div class="app-card">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3081/3081648.png" class="app-icon">
+                    <div class="app-info"><h3>Procurement</h3><p>Purchasing goods and services through Tender, Proforma, Direct</p></div>
+                </div>
+                <div class="app-card">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2660/2660481.png" class="app-icon">
+                    <div class="app-info"><h3>Payroll</h3><p>Monthly payroll process, pay slip and various payroll reports</p></div>
+                </div>
+                <div class="app-card">
+                    <img src="https://cdn-icons-png.flaticon.com/512/4341/4341731.png" class="app-icon">
+                    <div class="app-info"><h3>Budget</h3><p>Budget planning, tranfer, usage.Budget approval for transactions</p></div>
+                </div>
+                <div class="app-card">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3062/3062322.png" class="app-icon">
+                    <div class="app-info"><h3>Fleet & Machinery</h3><p>Manage vehicles and fleet, timesheet , dispach</p></div>
+                </div>
+                <div class="app-card">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3039/3039360.png" class="app-icon">
+                    <div class="app-info"><h3>Maintenance</h3><p>Manage vehicles inspection and repair, create job orders</p></div>
+                </div>
+                <div class="app-card">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2416/2416666.png" class="app-icon">
+                    <div class="app-info"><h3>Sys Admin</h3><p>User creation, role grouping, managing users and roles</p></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="settings-gear">
+        <i class="fa-solid fa-gear"></i>
+    </div>
+
+    <script>
+        document.querySelectorAll('.menu-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                const parentItem = link.parentElement;
+                const submenu = parentItem.querySelector('.submenu');
+                
+                if (submenu) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if(document.body.classList.contains('collapsed')) return;
+                    parentItem.classList.toggle('open');
+                }
+            });
+        });
+
+        function toggleSidebar() {
+            document.body.classList.toggle('collapsed');
+            const icon = document.querySelector('.collapse-btn i');
+            if(document.body.classList.contains('collapsed')) {
+                icon.classList.replace('fa-chevron-left', 'fa-chevron-right');
+            } else {
+                icon.classList.replace('fa-chevron-right', 'fa-chevron-left');
+            }
+        }
+    </script>
+</body>
+</html>
